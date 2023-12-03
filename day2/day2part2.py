@@ -1,4 +1,5 @@
 from collections import defaultdict
+from math import prod
 from typing import List
 
 from day2 import parse_game, test_data
@@ -6,13 +7,12 @@ from day2 import parse_game, test_data
 
 def determine_game_power(parsed_draws: List[dict]) -> int:
     minimum_colour_count = defaultdict(int)
+
     for parsed_draw in parsed_draws:
         for colour, count in parsed_draw.items():
             minimum_colour_count[colour] = max(count, minimum_colour_count[colour])
 
-    power = 1
-    for count in minimum_colour_count.values():
-        power *= count
+    power = prod(minimum_colour_count.values())
 
     return power
 

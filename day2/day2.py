@@ -56,8 +56,6 @@ test_data = [
     "Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green",
 ]
 
-print(add_up_possible_games(test_data))
-
 
 def task():
     with open("input", "r") as f:
@@ -65,4 +63,6 @@ def task():
     print(add_up_possible_games(texts))
 
 
-task()
+if __name__ == "__main__":
+    print(add_up_possible_games(test_data))
+    task()

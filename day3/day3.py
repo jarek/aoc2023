@@ -20,6 +20,8 @@ class Result:
 
 
 def tokenize_line(line: str) -> List[str]:
+    line = line.strip()  # input from readlines() has \n characters
+
     results = []
     line_length = len(line)
 
@@ -46,6 +48,8 @@ def build_map_near_symbols(
     symbols: Dict[Position, str], max_x: int, max_y: int
 ) -> Dict[Position, List[Position]]:
     result: Dict[Position, List[Position]] = defaultdict(list)
+
+    # TODO: max_x and max_y don't matter because we can overflow down and to right and it has no ill effect
 
     for orig in symbols.keys():
         up = orig.y - 1
@@ -144,18 +148,18 @@ def add_up_part_numbers(input: List[str]) -> int:
 
 
 test_data = [
-    "467..114..",
-    "...*......",
-    "..35..633.",
-    "......#...",
-    "610*7.....",  # note: changed to highlight a bug - was `617*......`
-    ".....+.58.",
-    "..592.....",
-    "......755.",
-    "7..$.*....",  # note: changed from test input, but doesn't change result
-    ".664.598..",
-    "..........",
-    "./663.273.",  # note: added from scratch to highlight another edge case
+    "467..114..\n",
+    "...*......\n",
+    "..35..633.\n",
+    "......#...\n",
+    "610*7.....\n",  # note: changed to highlight a bug - was `617*......`
+    ".....+.58.\n",
+    "..592.....\n",
+    "......755.\n",
+    "7..$.*....\n",  # note: changed from test input, but doesn't change result
+    ".664.598..\n",
+    "..........\n",
+    "./663.273.\n",  # note: added from scratch to highlight another edge case
 ]
 
 

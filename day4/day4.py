@@ -24,10 +24,14 @@ def parse_line(line: str) -> Card:
     )
 
 
-def score_card(card: Card) -> int:
+def count_matches(card: Card) -> int:
     matching_numbers = card.winning_numbers & card.own_numbers
 
-    num_matching = len(matching_numbers)
+    return len(matching_numbers)
+
+
+def score_card(card: Card) -> int:
+    num_matching = count_matches(card)
 
     score = int(math.pow(2, num_matching - 1))
 

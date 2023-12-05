@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Tuple
 
 
 SPACER = "."
+STAR = "*"
 
 
 @dataclass(frozen=True)
@@ -12,11 +13,17 @@ class Position:
     x: int
 
 
-@dataclass
-class Result:
+@dataclass(frozen=True)
+class Number:
     number: int
     position: Position
-    end_x: int  # TODO also Position?
+    end_x: int
+
+
+@dataclass(frozen=True)
+class Symbol:
+    symbol: str
+    position: Position
 
 
 def tokenize_line(line: str) -> List[str]:
@@ -46,10 +53,10 @@ def tokenize_line(line: str) -> List[str]:
 
 def build_map_near_symbols(
     symbols: Dict[Position, str]
-) -> Dict[Position, List[Position]]:
-    result: Dict[Position, List[Position]] = defaultdict(list)
+) -> Dict[Position, List[Symbol]]:
+    result: Dict[Position, List[Symbol]] = defaultdict(list)
 
-    for orig in symbols.keys():
+    for orig, symbol_value in symbols.items():
         up = orig.y - 1
         down = orig.y + 1
         can_go_up = up >= 0
@@ -60,36 +67,38 @@ def build_map_near_symbols(
         # note: we're not checking if we can go down or to the right,
         # because overflowing on those has no ill effect - we assume we always can
 
+        value_to_track = Symbol(position=orig, symbol=symbol_value)
+
         if can_go_up:
-            result[Position(x=orig.x, y=up)].append(orig)
-            result[Position(x=right, y=up)].append(orig)
+            result[Position(x=orig.x, y=up)].append(value_to_track)
+            result[Position(x=right, y=up)].append(value_to_track)
             if can_go_left:
-                result[Position(x=left, y=up)].append(orig)
+                result[Position(x=left, y=up)].append(value_to_track)
 
         # going down
-        result[Position(x=orig.x, y=down)].append(orig)
-        result[Position(x=right, y=down)].append(orig)
+        result[Position(x=orig.x, y=down)].append(value_to_track)
+        result[Position(x=right, y=down)].append(value_to_track)
         if can_go_left:
-            result[Position(x=left, y=down)].append(orig)
+            result[Position(x=left, y=down)].append(value_to_track)
 
         if can_go_left:
-            result[Position(x=left, y=orig.y)].append(orig)
-            result[Position(x=left, y=down)].append(orig)
+            result[Position(x=left, y=orig.y)].append(value_to_track)
+            result[Position(x=left, y=down)].append(value_to_track)
             if can_go_up:
-                result[Position(x=left, y=up)].append(orig)
+                result[Position(x=left, y=up)].append(value_to_track)
 
         # going right
-        result[Position(x=right, y=orig.y)].append(orig)
-        result[Position(x=right, y=down)].append(orig)
+        result[Position(x=right, y=orig.y)].append(value_to_track)
+        result[Position(x=right, y=down)].append(value_to_track)
         if can_go_up:
-            result[Position(x=right, y=up)].append(orig)
+            result[Position(x=right, y=up)].append(value_to_track)
 
     return result
 
 
 def find_numbers_and_symbols(
     input: List[str],
-) -> Tuple[List[Result], Dict[Position, str]]:
+) -> Tuple[List[Number], Dict[Position, str]]:
     results = []
     symbols = {}
     for y, line in enumerate(input):
@@ -105,7 +114,7 @@ def find_numbers_and_symbols(
                 # minus 1 to get "start position" of the last character in part
 
                 results.append(
-                    Result(number=int(part), position=Position(x=x, y=y), end_x=end_x)
+                    Number(number=int(part), position=Position(x=x, y=y), end_x=end_x)
                 )
                 x += part_length - 1  # skip to the end of the part
             elif part != SPACER:
@@ -118,7 +127,7 @@ def find_numbers_and_symbols(
     return results, symbols
 
 
-def is_position_near_symbol(result: Result, symbols: Dict[Position, Any]) -> bool:
+def is_position_near_symbol(result: Number, symbols: Dict[Position, Any]) -> bool:
     for x in range(result.position.x, result.end_x + 1):
         if Position(x=x, y=result.position.y) in symbols:
             return True
@@ -141,7 +150,7 @@ def add_up_part_numbers(input: List[str]) -> int:
 
 
 test_data = [
-    "467..114..\n",
+    "467..114.*\n",  # note: changed from test input, but doesn't change result
     "...*......\n",
     "..35..633.\n",
     "......#...\n",
@@ -150,7 +159,7 @@ test_data = [
     "..592.....\n",
     "......755.\n",
     "7..$.*....\n",  # note: changed from test input, but doesn't change result
-    ".664.598..\n",
+    ".664.598*.\n",  # note: changed from test input, but doesn't change result
     "..........\n",
     "./663.273.\n",  # note: added from scratch to highlight another edge case
 ]

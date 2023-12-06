@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
-
+from typing import Dict, Iterator, List, Optional, Tuple
 
 STEPS = [
     "seed",
@@ -63,29 +62,38 @@ class Map:
         return Map(resource_from=map_from, resource_to=map_to, ranges=map_ranges)
 
 
-def parse_input(data: str) -> Tuple[List[int], Dict[str, Map]]:
+def split_input_into_sections(data: str) -> Tuple[str, List[str]]:
     sections = data.split("\n\n")
+    return sections[0], sections[1:]
 
-    seeds = [int(seed_num) for seed_num in sections[0].split(":")[1].split()]
 
-    maps = [Map.from_string(map_str) for map_str in sections[1:]]
+def parse_maps(map_sections: List[str]) -> Dict[str, Map]:
+    maps = [Map.from_string(map_str) for map_str in map_sections]
     maps_dict = {map.resource_to: map for map in maps}
+    return maps_dict
 
-    return seeds, maps_dict
 
-
-def get_lowest_location_number(data: str) -> int:
-    seeds, maps_dict = parse_input(data)
-
-    locations = []
+def find_lowest_location(seeds: Iterator[int], maps_dict: Dict[str, Map]) -> int:
+    lowest_location = 99999999999
     for seed in seeds:
         source_num = seed
         for step in STEPS[1:]:
             # after each step, the new destination becomes the new source_num
             source_num = maps_dict[step].destination_for_source(source_num)
-        locations.append(source_num)
 
-    return min(locations)
+        lowest_location = min(lowest_location, source_num)
+
+    return lowest_location
+
+
+def get_lowest_location_number(data: str) -> int:
+    seeds_section, map_sections = split_input_into_sections(data)
+
+    seeds = (int(seed_num) for seed_num in seeds_section.split(":")[1].split())
+
+    maps_dict = parse_maps(map_sections)
+
+    return find_lowest_location(seeds, maps_dict)
 
 
 def test():
